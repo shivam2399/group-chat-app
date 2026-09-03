@@ -7,7 +7,10 @@ const {
     connectDB
 } = require("./config/db");
 
-const User = require("./models/User");
+require("./models/User");
+require("./models/Group");
+require("./models/Message");
+require("./models/associations");
 
 const PORT = process.env.PORT || 5000;
 
