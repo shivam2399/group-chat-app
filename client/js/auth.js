@@ -3,7 +3,7 @@ const loginForm = document.getElementById("loginForm");
 
 
 if (signupForm) {
-    signupForm.addEventListener("submit", (event) => {
+    signupForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         const name = document.getElementById("name").value.trim();
@@ -66,19 +66,43 @@ if (signupForm) {
         }
 
 
-        // Temporary testing
-        console.log({
-            name,
-            email,
-            phone,
-            password
-        });
+        // API request
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/auth/register`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        phone,
+                        password
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            alert("Account created successfully!");
+
+            window.location.href = "./login.html";
+
+        } catch (error) {
+            alert(error.message);
+        }
     });
 }
 
 
 if (loginForm) {
-    loginForm.addEventListener("submit", (event) => {
+    loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         const identifier =
@@ -118,10 +142,40 @@ if (loginForm) {
         }
 
 
-        // Temporary testing
-        console.log({
-            identifier,
-            password
-        });
+        // API request
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/auth/login`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        identifier,
+                        password
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem(
+                "user",
+                JSON.stringify(data.user)
+            );
+
+            alert("Login successful!");
+
+            window.location.href = "./chat.html";
+
+        } catch (error) {
+            alert(error.message);
+        }
     });
 }
