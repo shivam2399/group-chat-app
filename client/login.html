@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login</title>
+
+    <link rel="stylesheet" href="./css/auth.css">
+</head>
+
+<body>
+
+    <main class="auth-container">
+
+        <section class="auth-card">
+
+            <h1>Welcome Back</h1>
+
+            <p class="auth-subtitle">
+                Login to continue chatting.
+            </p>
+
+
+            <form id="loginForm">
+
+                <!-- Email or Phone -->
+                <div class="form-group">
+                    <label for="identifier">
+                        Email or Phone Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="identifier"
+                        name="identifier"
+                        placeholder="Enter email or phone number"
+                        autocomplete="username"
+                    >
+
+                    <small class="error" id="identifierError"></small>
+                </div>
+
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="password">Password</label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                    >
+
+                    <small class="error" id="passwordError"></small>
+                </div>
+
+
+                <button type="submit" class="auth-button">
+                    Login
+                </button>
+
+            </form>
+
+
+            <p class="auth-footer">
+                Don't have an account?
+                <a href="./signup.html">Create one</a>
+            </p>
+
+        </section>
+
+    </main>
+
+    <script src="./js/auth.js"></script>
+
+</body>
+</html>
