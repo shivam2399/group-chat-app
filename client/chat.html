@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Group Chat</title>
+
+    <link rel="stylesheet" href="./css/chat.css">
+</head>
+
+<body>
+
+    <main class="chat-layout">
+
+        <aside class="sidebar">
+
+    <!-- User Profile -->
+    <div class="profile">
+
+        <div class="profile-avatar">
+            S
+        </div>
+
+        <div class="profile-info">
+            <h3>Shivam</h3>
+            <span>Online</span>
+        </div>
+
+    </div>
+
+
+    <!-- Search -->
+    <div class="chat-search">
+
+        <input
+            type="text"
+            placeholder="Search chats..."
+        >
+
+    </div>
+
+
+    <!-- Groups -->
+    <div class="groups">
+
+        <div class="groups-header">
+            <span>Groups</span>
+        </div>
+
+
+        <!-- Group 1 -->
+        <div class="group-item active">
+
+            <div class="group-avatar">
+                D
+            </div>
+
+            <div class="group-info">
+
+                <div class="group-top">
+
+                    <h4>Developers</h4>
+
+                    <span class="group-time">
+                        11:45
+                    </span>
+
+                </div>
+
+                <div class="group-bottom">
+
+                    <p>
+                        Yes! Authentication is already working.
+                    </p>
+
+                    <span class="unread-count">
+                        2
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Group 2 -->
+        <div class="group-item">
+
+            <div class="group-avatar">
+                F
+            </div>
+
+            <div class="group-info">
+
+                <div class="group-top">
+
+                    <h4>Friends</h4>
+
+                    <span class="group-time">
+                        10:30
+                    </span>
+
+                </div>
+
+                <div class="group-bottom">
+
+                    <p>
+                        See you later!
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Group 3 -->
+        <div class="group-item">
+
+            <div class="group-avatar">
+                C
+            </div>
+
+            <div class="group-info">
+
+                <div class="group-top">
+
+                    <h4>College</h4>
+
+                    <span class="group-time">
+                        Yesterday
+                    </span>
+
+                </div>
+
+                <div class="group-bottom">
+
+                    <p>
+                        Meeting at 5 PM.
+                    </p>
+
+                    <span class="unread-count">
+                        4
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</aside>
+
+        <section class="chat-section">
+
+            <header class="chat-header">
+
+    <div class="chat-header-info">
+
+        <div class="chat-header-avatar">
+            D
+        </div>
+
+        <div>
+            <h2>Full Stack Developers</h2>
+            <span>12 members</span>
+        </div>
+
+    </div>
+
+    <div class="chat-header-actions">
+
+        <button
+            class="header-action"
+            title="Search"
+        >
+            🔍
+        </button>
+
+        <button
+            class="header-action"
+            title="More"
+        >
+            ⋮
+        </button>
+
+    </div>
+
+</header>
+
+            <section class="chat-messages">
+
+    <!-- Incoming message -->
+    <div class="message incoming">
+
+        <div class="message-avatar">
+            R
+        </div>
+
+        <div class="message-content">
+
+            <div class="message-sender">
+                Rahul
+            </div>
+
+            <div class="message-bubble">
+                Hey everyone 👋
+            </div>
+
+            <div class="message-meta">
+                11:42 AM
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Outgoing message -->
+    <div class="message outgoing">
+
+        <div class="message-content">
+
+            <div class="message-bubble">
+                Hey Rahul! What's up?
+            </div>
+
+            <div class="message-meta">
+                11:43 AM
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Incoming message -->
+    <div class="message incoming">
+
+        <div class="message-avatar">
+            P
+        </div>
+
+        <div class="message-content">
+
+            <div class="message-sender">
+                Priya
+            </div>
+
+            <div class="message-bubble">
+                Are we starting the Socket.IO implementation today?
+            </div>
+
+            <div class="message-meta">
+                11:44 AM
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Outgoing message -->
+    <div class="message outgoing">
+
+        <div class="message-content">
+
+            <div class="message-bubble">
+                Yes! Authentication is already working.
+            </div>
+
+            <div class="message-meta">
+                11:45 AM
+            </div>
+
+        </div>
+
+    </div>
+
+</section>  
+
+            <footer class="chat-input">
+
+    <button
+        class="input-action"
+        title="Emoji"
+        type="button"
+    >
+        😊
+    </button>
+
+
+    <button
+        class="input-action"
+        title="Attach file"
+        type="button"
+    >
+        📎
+    </button>
+
+
+    <input
+        type="text"
+        placeholder="Type a message..."
+        autocomplete="off"
+    >
+
+
+    <button
+        class="send-button"
+        type="button"
+    >
+        Send
+    </button>
+
+</footer>
+
+        </section>
+
+    </main>
+
+    <script src="./js/chat.js"></script>
+
+</body>
+</html>
