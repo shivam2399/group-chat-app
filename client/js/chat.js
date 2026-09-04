@@ -5,10 +5,22 @@ if (!token) {
     window.location.href = "./login.html";
 }
 
-const socket = io("http://localhost:5000");
+const socket = io("http://localhost:5000", {
+    auth: {
+        token: token
+    }
+});
 
 socket.on("connect", () => {
-    console.log("Connected to Socket.IO:", socket.id);
+    console.log("Connected to Socket.IO server:", socket.id);
+});
+
+socket.on("disconnect", () => {
+    console.log("Disconnected from Socket.IO server");
+});
+
+socket.on("connect_error", (error) => {
+    console.error("Socket connection failed:", error.message);
 });
 
 let currentGroupId = 1;
