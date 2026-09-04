@@ -50,7 +50,37 @@ const createMessage = async (req, res) => {
     }
 };
 
+const getMessages = async (req, res) => {
+    try {
+        const { groupId } = req.params;
+
+        if (!groupId) {
+            return res.status(400).json({
+                success: false,
+                message: "Group ID is required"
+            });
+        }
+
+        const messages =
+            await messageService.getMessagesByGroup(groupId);
+
+        return res.status(200).json({
+            success: true,
+            data: messages
+        });
+
+    } catch (error) {
+        console.error("Failed to fetch messages:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch messages"
+        });
+    }
+};
+
 
 module.exports = {
-    createMessage
+    createMessage,
+    getMessages
 };

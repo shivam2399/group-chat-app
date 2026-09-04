@@ -96,28 +96,69 @@ async function sendMessage() {
 function addMessageToUI(message) {
     const messageElement = document.createElement("div");
 
-    messageElement.classList.add("message", "outgoing");
+    const isOwnMessage =
+        Number(message.senderId) === Number(user.id);
 
-    const messageContent = document.createElement("div");
+    messageElement.classList.add(
+        "message",
+        isOwnMessage ? "outgoing" : "incoming"
+    );
+
+
+    if (!isOwnMessage) {
+        const avatar = document.createElement("div");
+
+        avatar.classList.add("message-avatar");
+
+        avatar.textContent =
+            message.sender?.name?.charAt(0).toUpperCase() || "?";
+
+        messageElement.appendChild(avatar);
+    }
+
+
+    const messageContent =
+        document.createElement("div");
 
     messageContent.classList.add("message-content");
 
-    const messageBubble = document.createElement("div");
+
+    if (!isOwnMessage) {
+        const senderName =
+            document.createElement("div");
+
+        senderName.classList.add("message-sender");
+
+        senderName.textContent =
+            message.sender?.name || "Unknown User";
+
+        messageContent.appendChild(senderName);
+    }
+
+
+    const messageBubble =
+        document.createElement("div");
 
     messageBubble.classList.add("message-bubble");
 
-    messageBubble.textContent = message.content;
+    messageBubble.textContent =
+        message.content;
 
-    const messageMeta = document.createElement("div");
+
+    const messageMeta =
+        document.createElement("div");
 
     messageMeta.classList.add("message-meta");
 
-    const date = new Date(message.createdAt);
+    const date =
+        new Date(message.createdAt);
 
-    messageMeta.textContent = date.toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit"
-    });
+    messageMeta.textContent =
+        date.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+        });
+
 
     messageContent.appendChild(messageBubble);
     messageContent.appendChild(messageMeta);
@@ -125,6 +166,39 @@ function addMessageToUI(message) {
     messageElement.appendChild(messageContent);
 
     chatMessages.appendChild(messageElement);
+}
+
+async function loadMessages(groupId) {
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/messages/${groupId}`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message);
+        }
+
+        chatMessages.innerHTML = "";
+
+        data.data.forEach((message) => {
+            addMessageToUI(message);
+        });
+
+        scrollToBottom();
+
+    } catch (error) {
+        console.error("Failed to load messages:", error);
+
+        alert("Failed to load messages.");
+    }
 }
 
 
@@ -181,3 +255,5 @@ messageInput.addEventListener(
 
     }
 );
+
+loadMessages(currentGroupId);
