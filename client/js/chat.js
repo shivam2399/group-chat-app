@@ -5,6 +5,12 @@ if (!token) {
     window.location.href = "./login.html";
 }
 
+const socket = io("http://localhost:5000");
+
+socket.on("connect", () => {
+    console.log("Connected to Socket.IO:", socket.id);
+});
+
 let currentGroupId = 1;
 
 const chatMessages = document.querySelector(".chat-messages");
