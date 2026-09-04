@@ -37,6 +37,8 @@ groupItems.forEach((group) => {
         currentGroupId = Number(groupId);
 
         chatHeader.textContent = groupName;
+
+        loadMessages(currentGroupId);
     });
 });
 
