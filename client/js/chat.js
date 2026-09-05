@@ -13,6 +13,8 @@ const socket = io("http://localhost:5000", {
 
 socket.on("connect", () => {
     console.log("Connected to Socket.IO server:", socket.id);
+
+    socket.emit("join_group", currentGroupId);
 });
 
 socket.on("disconnect", () => {
@@ -49,10 +51,21 @@ groupItems.forEach((group) => {
         const groupName =
             group.querySelector(".group-top h4").textContent;
 
-        const groupId =
-            group.dataset.groupId;
+        const groupId = group.dataset.groupId;
+
+        const previousGroupId = currentGroupId;
+
+        socket.emit(
+            "leave_group",
+            previousGroupId
+        );
 
         currentGroupId = Number(groupId);
+
+        socket.emit(
+            "join_group",
+            currentGroupId
+        );
 
         chatHeader.textContent = groupName;
 
