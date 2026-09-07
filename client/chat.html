@@ -21,13 +21,17 @@
             <!-- User Profile -->
             <div class="profile">
 
-                <div class="profile-avatar">
-                    S
-                </div>
+                <div
+                    class="profile-avatar"
+                    id="profile-avatar"
+                ></div>
 
                 <div class="profile-info">
-                    <h3>Shivam</h3>
+
+                    <h3 id="profile-name"></h3>
+
                     <span>Online</span>
+
                 </div>
 
             </div>
@@ -39,133 +43,40 @@
                 <input
                     type="text"
                     placeholder="Search chats..."
+                    autocomplete="off"
                 >
 
             </div>
 
 
             <!-- Groups -->
+
             <div class="groups">
 
                 <div class="groups-header">
                     <span>Groups</span>
                 </div>
 
-
-                <!-- ==================== GROUP 1 ==================== -->
-
                 <div
-                    class="group-item active"
-                    data-group-id="1"
-                >
+                    class="group-list"
+                    id="group-list"
+                ></div>
 
-                    <div class="group-avatar">
-                        D
-                    </div>
+            </div>
 
-                    <div class="group-info">
 
-                        <div class="group-top">
+            <!-- Users -->
 
-                            <h4>Developers</h4>
+            <div class="users">
 
-                            <span class="group-time">
-                                11:45
-                            </span>
-
-                        </div>
-
-                        <div class="group-bottom">
-
-                            <p>
-                                Yes! Authentication is already working.
-                            </p>
-
-                            <span class="unread-count">
-                                2
-                            </span>
-
-                        </div>
-
-                    </div>
-
+                <div class="users-header">
+                    <span>People</span>
                 </div>
 
-
-                <!-- ==================== GROUP 2 ==================== -->
-
                 <div
-                    class="group-item"
-                    data-group-id="2"
-                >
-
-                    <div class="group-avatar">
-                        F
-                    </div>
-
-                    <div class="group-info">
-
-                        <div class="group-top">
-
-                            <h4>Friends</h4>
-
-                            <span class="group-time">
-                                10:30
-                            </span>
-
-                        </div>
-
-                        <div class="group-bottom">
-
-                            <p>
-                                See you later!
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- ==================== GROUP 3 ==================== -->
-
-                <div
-                    class="group-item"
-                    data-group-id="3"
-                >
-
-                    <div class="group-avatar">
-                        C
-                    </div>
-
-                    <div class="group-info">
-
-                        <div class="group-top">
-
-                            <h4>College</h4>
-
-                            <span class="group-time">
-                                Yesterday
-                            </span>
-
-                        </div>
-
-                        <div class="group-bottom">
-
-                            <p>
-                                Meeting at 5 PM.
-                            </p>
-
-                            <span class="unread-count">
-                                4
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
+                    class="user-list"
+                    id="user-list"
+                ></div>
 
             </div>
 
@@ -183,18 +94,17 @@
 
                 <div class="chat-header-info">
 
-                    <div class="chat-header-avatar">
-                        D
-                    </div>
+                    <div
+                        class="chat-header-avatar"
+                        id="chat-header-avatar"
+                    ></div>
 
                     <div>
 
-                        <h2>
-                            Developers
-                        </h2>
+                        <h2 id="chat-header"></h2>
 
-                        <span>
-                            12 members
+                        <span id="chat-member-count">
+                            <!-- Populated dynamically -->
                         </span>
 
                     </div>
@@ -230,11 +140,12 @@
             <!--
                 Messages are loaded dynamically by chat.js
                 from the backend API.
-
-                Do NOT put hardcoded messages here.
             -->
 
-            <section class="chat-messages"></section>
+            <section
+                class="chat-messages"
+                id="chat-messages"
+            ></section>
 
 
             <!-- ==================== MESSAGE INPUT ==================== -->
@@ -286,7 +197,11 @@
     -->
 
     <script src="./js/api.js"></script>
+
+    <!-- Socket.IO client -->
     <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+
+    <!-- Chat application logic -->
     <script src="./js/chat.js"></script>
 
 </body>

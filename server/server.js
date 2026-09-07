@@ -11,6 +11,7 @@ const {
 require("./models/User");
 require("./models/Group");
 require("./models/Message");
+require("./models/DirectMessage")
 require("./models/associations");
 
 const initializeSocket =

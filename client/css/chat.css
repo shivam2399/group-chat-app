@@ -668,10 +668,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 8px;
-
-    margin-top: 4px;
 }
 
 
@@ -686,29 +683,162 @@ body {
     text-overflow: ellipsis;
 }
 
+/* ========================================
+   USERS / PEOPLE
+======================================== */
+
+.users {
+    margin-top: 24px;
+}
+
+
+.users-header {
+    margin-bottom: 10px;
+
+    color: #64748b;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+
+/* ========================================
+   USER ITEM
+======================================== */
+
+.user-item {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    width: 100%;
+
+    padding: 10px;
+
+    margin-bottom: 4px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.user-item:hover {
+    background-color: #1e293b;
+}
+
+
+.user-item.active {
+    background-color: #1e293b;
+}
+
+
+/* ========================================
+   USER AVATAR
+======================================== */
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background-color: #334155;
+
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* ========================================
+   USER INFORMATION
+======================================== */
+
+.user-info {
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+.user-info h4 {
+    overflow: hidden;
+
+    color: #f8fafc;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+.user-info span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #22c55e;
+
+    font-size: 10px;
+}
+
+
+/* ========================================
+   EMPTY USERS
+======================================== */
+
+.empty-users {
+    padding: 10px;
+
+    color: #64748b;
+
+    font-size: 12px;
+
+    text-align: center;
+}
 
 /* ========================================
    UNREAD COUNT
 ======================================== */
 
 .unread-count {
-    min-width: 18px;
-    height: 18px;
+    display: none;
 
-    display: flex;
     align-items: center;
     justify-content: center;
 
-    padding: 0 5px;
+    min-width: 20px;
+    height: 20px;
 
-    border-radius: 999px;
+    padding: 0 6px;
 
-    background-color: #6366f1;
+    border-radius: 50%;
 
-    color: #ffffff;
+    background: #4f46e5;
+    color: white;
 
-    font-size: 10px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
+
+    flex-shrink: 0;
 }
 
 /* ========================================
@@ -726,6 +856,8 @@ body {
 
     gap: 12px;
 }
+
+
 
 
 .chat-header-avatar {

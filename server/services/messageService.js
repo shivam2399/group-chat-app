@@ -6,13 +6,28 @@ const createMessage = async ({
     groupId,
     content
 }) => {
+
     const message = await Message.create({
         senderId,
         groupId,
         content
     });
 
-    return message;
+    const messageWithSender =
+        await Message.findByPk(
+            message.id,
+            {
+                include: [
+                    {
+                        model: User,
+                        as: "sender",
+                        attributes: ["id", "name"]
+                    }
+                ]
+            }
+        );
+
+    return messageWithSender;
 };
 
 
