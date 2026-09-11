@@ -1,7 +1,8 @@
 const User = require("./User");
 const Group = require("./Group");
 const Message = require("./Message");
-const DirectMessage = require("./DirectMessage")
+const DirectMessage = require("./DirectMessage");
+const GroupMember = require("./GroupMember");
 
 
 User.hasMany(Message, {
@@ -43,4 +44,24 @@ DirectMessage.belongsTo(User, {
 DirectMessage.belongsTo(User, {
     foreignKey: "receiverId",
     as: "receiver"
+});
+
+User.hasMany(GroupMember, {
+    foreignKey: "userId",
+    as: "groupMemberships"
+});
+
+GroupMember.belongsTo(User, {
+    foreignKey: "userId",
+    as: "user"
+});
+
+Group.hasMany(GroupMember, {
+    foreignKey: "groupId",
+    as: "members"
+});
+
+GroupMember.belongsTo(Group, {
+    foreignKey: "groupId",
+    as: "group"
 });

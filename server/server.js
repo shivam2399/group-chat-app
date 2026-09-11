@@ -11,14 +11,12 @@ const {
 require("./models/User");
 require("./models/Group");
 require("./models/Message");
-require("./models/DirectMessage")
+require("./models/DirectMessage");
+require("./models/GroupMember");
 require("./models/associations");
 
-const initializeSocket =
-    require("./socket-io");
-
+const initializeSocket = require("./socket-io");
 const PORT = process.env.PORT || 5000;
-
 const server = http.createServer(app);
 initializeSocket(server)
 

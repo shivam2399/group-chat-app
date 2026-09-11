@@ -1,11 +1,26 @@
 const Message = require("../models/Message");
 const User = require("../models/User");
+const GroupMember = require("../models/GroupMember");
 
 const createMessage = async ({
     senderId,
     groupId,
     content
 }) => {
+
+    const membership =
+        await GroupMember.findOne({
+            where: {
+                groupId,
+                userId: senderId
+            }
+        });
+
+    if (!membership) {
+        throw new Error(
+            "You are not a member of this group"
+        );
+    }
 
     const message = await Message.create({
         senderId,
@@ -31,7 +46,25 @@ const createMessage = async ({
 };
 
 
-const getMessagesByGroup = async (groupId) => {
+const getMessagesByGroup = async (
+    groupId,
+    userId
+) => {
+
+    const membership =
+        await GroupMember.findOne({
+            where: {
+                groupId,
+                userId
+            }
+        });
+
+    if (!membership) {
+        throw new Error(
+            "You are not a member of this group"
+        );
+    }
+
     const messages = await Message.findAll({
         where: {
             groupId: groupId

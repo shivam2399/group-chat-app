@@ -13,6 +13,11 @@ const Group = sequelize.define(
         name: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+
+        createdBy: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
     },
     {

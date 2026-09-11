@@ -55,6 +55,14 @@
 
                 <div class="groups-header">
                     <span>Groups</span>
+
+                    <button
+                        id="create-group-btn"
+                        class="create-group-btn"
+                        title="Create Group"
+                    >
+                        +
+                    </button>
                 </div>
 
                 <div
@@ -78,6 +86,138 @@
                     id="user-list"
                 ></div>
 
+            </div>
+
+            <div
+        class="modal-overlay"
+        id="create-group-modal"
+    >
+        <div class="modal">
+                    <div class="modal-header">
+                        <h3>Create New Group</h3>
+
+                        <button
+                            id="close-create-group-modal"
+                            class="modal-close"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <form id="create-group-form">
+
+                        <label for="group-name">
+                            Group Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="group-name"
+                            placeholder="Enter group name"
+                            maxlength="50"
+                            required
+                        />
+
+                        <p
+                            id="create-group-error"
+                            class="form-error"
+                        ></p>
+
+                        <button
+                            type="submit"
+                            class="create-group-submit"
+                        >
+                            Create Group
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+            <div
+                class="modal-overlay"
+                id="group-info-modal"
+            >
+                <div class="modal group-info-modal">
+
+                    <div class="modal-header">
+                        <div>
+                            <h3 id="group-info-name">
+                                Group Info
+                            </h3>
+
+                            <p id="group-member-count">
+                                0 members
+                            </p>
+                        </div>
+
+                        <button
+                            id="close-group-info-modal"
+                            class="modal-close"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <div
+                        id="group-member-list"
+                        class="group-member-list"
+                    >
+                    </div>
+
+                    <button
+                        id="add-members-btn"
+                        class="create-group-submit"
+                    >
+                        + Add Members
+                    </button>
+
+                    <button
+                        id="leave-group-btn"
+                        class="leave-group-btn"
+                    >
+                        Leave Group
+                    </button>
+
+                </div>
+            </div>
+           
+            <div
+                class="modal-overlay"
+                id="add-members-modal"
+            >
+                <div class="modal">
+
+                    <div class="modal-header">
+                        <h3>Add Members</h3>
+
+                        <button
+                            id="close-add-members-modal"
+                            class="modal-close"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <div
+                        id="available-users-list"
+                        class="available-users-list"
+                    >
+                    </div>
+
+                    <p
+                        id="add-members-error"
+                        class="form-error"
+                    ></p>
+
+                    <button
+                        id="confirm-add-members-btn"
+                        class="create-group-submit"
+                    >
+                        Add Selected
+                    </button>
+
+                </div>
             </div>
 
         </aside>
@@ -123,12 +263,12 @@
                     </button>
 
                     <button
-                        class="header-action"
-                        title="More"
-                        type="button"
-                    >
-                        ⋮
-                    </button>
+                    id="group-info-btn"
+                    class="group-info-btn"
+                    title="Group Info"
+                >
+                    ⓘ
+                </button>
 
                 </div>
 

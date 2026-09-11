@@ -1,5 +1,5 @@
-const personalMessageService =
-    require("../../services/personalMessageService");
+const personalMessageService = require("../../services/personalMessageService");
+const User = require("../../models/User");
 
 
 const getPersonalRoom = (
@@ -25,27 +25,88 @@ const registerPersonalChatHandlers = (
 
     socket.on(
         "join_room",
-        ({ userId }) => {
+        async ({ userId }) => {
 
-            if (!userId) {
-                return;
-            }
+            try {
 
-            const currentUserId = socket.user.id;
+                if (!userId) {
+                    return;
+                }
 
-            const roomName = getPersonalRoom(
-                    currentUserId,
-                    userId
+                const currentUserId =
+                    socket.user.id;
+
+                // Verify that the other user exists
+                const otherUser =
+                    await User.findByPk(userId);
+
+                if (!otherUser) {
+
+                    console.log(
+                        `User ${userId} does not exist`
+                    );
+
+                    socket.emit(
+                        "personal_room_error",
+                        {
+                            message:
+                                "User does not exist"
+                        }
+                    );
+
+                    return;
+                }
+
+                // Prevent joining a room with yourself
+                if (
+                    Number(currentUserId) ===
+                    Number(userId)
+                ) {
+
+                    socket.emit(
+                        "personal_room_error",
+                        {
+                            message:
+                                "You cannot start a chat with yourself"
+                        }
+                    );
+
+                    return;
+                }
+
+                const roomName =
+                    getPersonalRoom(
+                        currentUserId,
+                        userId
+                    );
+
+                socket.join(roomName);
+
+                console.log(
+                    "PERSONAL ROOM JOINED:",
+                    {
+                        currentUserId,
+                        userId,
+                        roomName,
+                        socketId: socket.id
+                    }
                 );
 
-            socket.join(roomName);
+            } catch (error) {
 
-            console.log("PERSONAL ROOM JOINED:", {
-                currentUserId,
-                userId,
-                roomName,
-                socketId: socket.id
-            });
+                console.error(
+                    "Failed to join personal room:",
+                    error
+                );
+
+                socket.emit(
+                    "personal_room_error",
+                    {
+                        message:
+                            "Failed to join personal chat"
+                    }
+                );
+            }
         }
     );
 

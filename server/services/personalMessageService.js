@@ -11,6 +11,13 @@ const sendPersonalMessage = async ({
     content
 }) => {
 
+    const receiver = await User.findByPk(receiverId);
+    if (!receiver) {
+        throw new Error(
+            "Receiver does not exist"
+        );
+    }
+
     const message = await DirectMessage.create({
         senderId,
         receiverId,

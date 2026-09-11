@@ -41,7 +41,20 @@ const createMessage = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "Failed to create message:",
+            error
+        );
+
+        if (
+            error.message ===
+            "You are not a member of this group"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: error.message
+            });
+        }
 
         return res.status(500).json({
             success: false,
@@ -61,8 +74,7 @@ const getMessages = async (req, res) => {
             });
         }
 
-        const messages =
-            await messageService.getMessagesByGroup(groupId);
+        const messages = await messageService.getMessagesByGroup(groupId, req.user.id);
 
         return res.status(200).json({
             success: true,
@@ -71,6 +83,16 @@ const getMessages = async (req, res) => {
 
     } catch (error) {
         console.error("Failed to fetch messages:", error);
+
+        if (
+            error.message ===
+            "You are not a member of this group"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: error.message
+            });
+        }
 
         return res.status(500).json({
             success: false,
