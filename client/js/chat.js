@@ -9,6 +9,7 @@ if (!token || !user) {
 
 let currentGroupId = null;
 let currentPersonalUserId = null;
+let selectedFile = null;
 
 
 /* ==================== DOM ELEMENTS ==================== */
@@ -21,7 +22,7 @@ const chatHeader = document.getElementById("chat-header");
 const chatHeaderAvatar = document.getElementById("chat-header-avatar");
 const chatMemberCount = document.getElementById("chat-member-count");
 const chatMessages = document.getElementById("chat-messages");
-const messageInput = document.querySelector(".chat-input input");
+const messageInput = document.getElementById("message-input");
 const sendButton = document.querySelector(".send-button");
 const createGroupBtn = document.getElementById("create-group-btn");
 const createGroupModal = document.getElementById("create-group-modal");
@@ -42,6 +43,209 @@ const closeAddMembersModal = document.getElementById("close-add-members-modal");
 const availableUsersList = document.getElementById("available-users-list");
 const confirmAddMembersBtn = document.getElementById("confirm-add-members-btn");
 const addMembersError = document.getElementById("add-members-error");
+const attachFileBtn = document.getElementById("attach-file-btn");
+const fileInput = document.getElementById("file-input");
+const attachmentPreview = document.getElementById("attachment-preview");
+
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
+const ALLOWED_FILE_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/plain",
+
+    "video/mp4",
+    "video/webm",
+
+    "audio/mpeg",
+    "audio/wav",
+    "audio/ogg"
+];
+
+function validateFile(file) {
+
+    if (!file) {
+        return {
+            valid: false,
+            message: "Please select a file"
+        };
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+        return {
+            valid: false,
+            message: "File size cannot exceed 25 MB"
+        };
+    }
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        return {
+            valid: false,
+            message: "This file type is not supported"
+        };
+    }
+
+    return {
+        valid: true
+    };
+}
+
+function getMessageType(file) {
+
+    if (file.type.startsWith("image/")) {
+        return "image";
+    }
+
+    if (file.type.startsWith("video/")) {
+        return "video";
+    }
+
+    if (file.type.startsWith("audio/")) {
+        return "audio";
+    }
+
+    return "file";
+}
+
+function showAttachmentPreview(file) {
+
+    attachmentPreview.innerHTML = "";
+
+    attachmentPreview.hidden = false;
+
+    const previewContent =
+        document.createElement("div");
+
+    previewContent.classList.add(
+        "attachment-preview-content"
+    );
+
+    // Image preview
+    if (file.type.startsWith("image/")) {
+
+        const image =
+            document.createElement("img");
+
+        image.src =
+            URL.createObjectURL(file);
+
+        image.alt = file.name;
+
+        image.classList.add(
+            "attachment-preview-image"
+        );
+
+        previewContent.appendChild(image);
+    }
+
+    // Non-image file
+    else {
+
+        const fileIcon =
+            document.createElement("div");
+
+        fileIcon.classList.add(
+            "attachment-preview-icon"
+        );
+
+        fileIcon.textContent = "📄";
+
+        previewContent.appendChild(
+            fileIcon
+        );
+    }
+
+    const fileInfo =
+        document.createElement("div");
+
+    fileInfo.classList.add(
+        "attachment-preview-info"
+    );
+
+    const fileName =
+        document.createElement("div");
+
+    fileName.classList.add(
+        "attachment-preview-name"
+    );
+
+    fileName.textContent =
+        file.name;
+
+    const fileSize =
+        document.createElement("div");
+
+    fileSize.classList.add(
+        "attachment-preview-size"
+    );
+
+    fileSize.textContent =
+        formatFileSize(file.size);
+
+    fileInfo.appendChild(fileName);
+    fileInfo.appendChild(fileSize);
+
+    previewContent.appendChild(
+        fileInfo
+    );
+
+    // Remove button
+    const removeButton =
+        document.createElement("button");
+
+    removeButton.type = "button";
+
+    removeButton.textContent = "×";
+
+    removeButton.classList.add(
+        "attachment-preview-remove"
+    );
+
+    removeButton.addEventListener(
+        "click",
+        removeSelectedFile
+    );
+
+    previewContent.appendChild(
+        removeButton
+    );
+
+    attachmentPreview.appendChild(
+        previewContent
+    );
+}
+
+function formatFileSize(bytes) {
+
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    }
+
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function removeSelectedFile() {
+
+    selectedFile = null;
+
+    fileInput.value = "";
+
+    attachmentPreview.innerHTML = "";
+
+    attachmentPreview.hidden = true;
+}
 
 
 /* ==================== SOCKET.IO ==================== */
@@ -892,14 +1096,150 @@ function addMessageToUI(message) {
     }
 
     const messageBubble =
-        document.createElement("div");
+    document.createElement("div");
 
     messageBubble.classList.add(
         "message-bubble"
     );
 
-    messageBubble.textContent =
-        message.content;
+    /*
+        TEXT MESSAGE
+    */
+
+    if (message.messageType === "text") {
+
+        messageBubble.textContent =
+            message.content || "";
+
+    }
+
+    /*
+        IMAGE MESSAGE
+    */
+
+    else if (message.messageType === "image") {
+
+        const image =
+            document.createElement("img");
+
+        image.src =
+            message.mediaUrl;
+
+        image.alt =
+            message.mediaName ||
+            "Shared image";
+
+        image.classList.add(
+            "chat-image"
+        );
+
+        messageBubble.appendChild(
+            image
+        );
+
+    }
+
+
+    /*
+        FILE MESSAGE
+    */
+
+    else if (message.messageType === "file") {
+
+        const fileLink =
+            document.createElement("a");
+
+        fileLink.href =
+            message.mediaUrl;
+
+        fileLink.target = "_blank";
+
+        fileLink.rel =
+            "noopener noreferrer";
+
+        fileLink.textContent =
+            message.mediaName ||
+            "Open file";
+
+        fileLink.classList.add(
+            "chat-file"
+        );
+
+        messageBubble.appendChild(
+            fileLink
+        );
+
+    }
+
+
+    /*
+        VIDEO MESSAGE
+    */
+
+    else if (message.messageType === "video") {
+
+        const video =
+            document.createElement("video");
+
+        video.src =
+            message.mediaUrl;
+
+        video.controls = true;
+
+        video.classList.add(
+            "chat-video"
+        );
+
+        messageBubble.appendChild(
+            video
+        );
+
+    }
+
+
+    /*
+        AUDIO MESSAGE
+    */
+
+    else if (message.messageType === "audio") {
+
+        const audio =
+            document.createElement("audio");
+
+        audio.src =
+            message.mediaUrl;
+
+        audio.controls = true;
+
+        audio.classList.add(
+            "chat-audio"
+        );
+
+        messageBubble.appendChild(
+            audio
+        );
+
+    }
+
+    if (
+        message.messageType !== "text" &&
+        message.content
+    ) {
+
+        const caption =
+            document.createElement("div");
+
+        caption.classList.add(
+            "media-caption"
+        );
+
+        caption.textContent =
+            message.content;
+
+        messageBubble.appendChild(
+            caption
+        );
+    }
 
     const messageMeta =
         document.createElement("div");
@@ -937,21 +1277,235 @@ function addMessageToUI(message) {
     );
 }
 
+async function uploadMediaFile(file) {
+    try {
+        const formData = new FormData();
+
+        formData.append("file", file);
+
+        const response = await fetch(
+            `${API_BASE_URL}/media/upload`,
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: formData
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message ||
+                "Failed to upload file"
+            );
+        }
+
+        console.log(
+            "MEDIA UPLOAD SUCCESS:",
+            result
+        );
+
+        return result.data;
+
+    } catch (error) {
+
+        console.error(
+            "MEDIA UPLOAD ERROR:",
+            error
+        );
+
+        throw error;
+    }
+}
+
+attachFileBtn.addEventListener(
+    "click",
+    () => {
+        fileInput.click();
+    }
+);
+
+fileInput.addEventListener(
+    "change",
+    () => {
+
+        const file =
+            fileInput.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        const validation =
+            validateFile(file);
+
+        if (!validation.valid) {
+            alert(validation.message);
+            fileInput.value = "";
+            return;
+        }
+
+        selectedFile = file;
+        showAttachmentPreview(file);
+
+        console.log(
+            "PENDING FILE:",
+            {
+                name: file.name,
+                size: file.size,
+                type: file.type
+            }
+        );
+    }
+);
+
 
 /* ==================== SEND MESSAGE ==================== */
 
-function sendMessage() {
+async function sendMessage() {
+    console.log("Text message received")
 
     const messageText =
         messageInput.value.trim();
 
-    if (!messageText) {
+    // Nothing to send
+    if (!messageText && !selectedFile) {
         return;
     }
 
 
     // =========================
-    // PERSONAL CHAT
+    // MEDIA MESSAGE
+    // =========================
+
+    if (selectedFile) {
+
+        try {
+
+            console.log(
+                "UPLOADING ATTACHMENT..."
+            );
+
+            const uploadedFile =
+                await uploadMediaFile(
+                    selectedFile
+                );
+
+            console.log(
+                "FILE UPLOADED:",
+                uploadedFile
+            );
+
+            const messageType =
+                getMessageType(
+                    selectedFile
+                );
+
+
+            // =========================
+            // PERSONAL MEDIA
+            // =========================
+
+            if (currentPersonalUserId) {
+
+                socket.emit(
+                    "send_personal_message",
+                    {
+                        receiverId:
+                            currentPersonalUserId,
+
+                        content:
+                            messageText || null,
+
+                        messageType,
+
+                        mediaKey:
+                            uploadedFile.mediaKey,
+
+                        mediaUrl:
+                            uploadedFile.url,
+
+                        mediaName:
+                            uploadedFile.fileName,
+
+                        mediaSize:
+                            uploadedFile.fileSize,
+
+                        mimeType:
+                            uploadedFile.mimeType
+                    }
+                );
+            }
+
+
+            // =========================
+            // GROUP MEDIA
+            // =========================
+
+            else if (currentGroupId) {
+
+                socket.emit(
+                    "send_message",
+                    {
+                        groupId:
+                            currentGroupId,
+
+                        content:
+                            messageText || null,
+
+                        messageType,
+
+                        mediaKey:
+                            uploadedFile.mediaKey,
+
+                        mediaUrl:
+                            uploadedFile.url,
+
+                        mediaName:
+                            uploadedFile.fileName,
+
+                        mediaSize:
+                            uploadedFile.fileSize,
+
+                        mimeType:
+                            uploadedFile.mimeType
+                    }
+                );
+            }
+
+
+            // =========================
+            // CLEAN UP
+            // =========================
+
+            messageInput.value = "";
+
+            removeSelectedFile();
+
+            messageInput.focus();
+
+        } catch (error) {
+
+            console.error(
+                "FAILED TO SEND MEDIA:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Failed to send file"
+            );
+        }
+
+        return;
+    }
+
+
+    // =========================
+    // TEXT MESSAGE
     // =========================
 
     if (currentPersonalUserId) {

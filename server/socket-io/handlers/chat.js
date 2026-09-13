@@ -1,5 +1,6 @@
 const messageService = require("../../services/messageService");
 const GroupMember = require("../../models/GroupMember");
+const { generatePresignedUrl } = require("../../services/s3Service");
 
 const registerChatHandlers = (io, socket) => {
 
@@ -70,20 +71,117 @@ const registerChatHandlers = (io, socket) => {
 
     socket.on(
         "send_message",
-        async ({ groupId, content }) => {
+        async ({
+            groupId,
+            content,
+            messageType = "text",
+            mediaKey = null,
+            mediaUrl = null,
+            mediaName = null,
+            mediaSize = null,
+            mimeType = null
+        }) => {
 
             try {
 
-                if (!groupId || !content?.trim()) {
+                if (!groupId) {
                     return;
                 }
 
+                // =========================
+                // TEXT MESSAGE
+                // =========================
+
+                if (messageType === "text") {
+
+                    if (!content?.trim()) {
+                        return;
+                    }
+
+                    const message =
+                        await messageService.createMessage({
+                            senderId: socket.user.id,
+                            groupId,
+                            content: content.trim()
+                        });
+
+                    io.to(`group_${groupId}`).emit(
+                        "new_message",
+                        message
+                    );
+
+                    return;
+                }
+
+
+                // =========================
+                // MEDIA MESSAGE
+                // =========================
+
+                const allowedMessageTypes = [
+                    "image",
+                    "file",
+                    "video",
+                    "audio"
+                ];
+
+                if (
+                    !allowedMessageTypes.includes(
+                        messageType
+                    )
+                ) {
+                    socket.emit(
+                        "group_message_error",
+                        {
+                            groupId,
+                            message:
+                                "Invalid message type"
+                        }
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    !mediaKey ||
+                    !mediaName ||
+                    !mimeType
+                ) {
+                    socket.emit(
+                        "group_message_error",
+                        {
+                            groupId,
+                            message:
+                                "Media information is required"
+                        }
+                    );
+
+                    return;
+                }
+
+
                 const message =
-                    await messageService.createMessage({
+                    await messageService.createMediaMessage({
                         senderId: socket.user.id,
                         groupId,
-                        content: content.trim()
+                        mediaKey,
+                        mediaUrl,
+                        mediaName,
+                        mediaSize,
+                        mimeType,
+                        messageType,
+                        content:
+                            content?.trim() || null
                     });
+
+                const signedUrl =
+                    await generatePresignedUrl(
+                        message.mediaKey
+                    );
+
+                message.mediaUrl = signedUrl;  
+
 
                 io.to(`group_${groupId}`).emit(
                     "new_message",
@@ -97,22 +195,31 @@ const registerChatHandlers = (io, socket) => {
                     error
                 );
 
+
                 if (
                     error.message ===
                     "You are not a member of this group"
                 ) {
-                    socket.emit("group_message_error", {
-                        groupId,
-                        message: error.message
-                    });
+
+                    socket.emit(
+                        "group_message_error",
+                        {
+                            groupId,
+                            message: error.message
+                        }
+                    );
 
                     return;
                 }
 
-                socket.emit("message_error", {
-                    message:
-                        "Failed to send message"
-                });
+
+                socket.emit(
+                    "message_error",
+                    {
+                        message:
+                            "Failed to send message"
+                    }
+                );
             }
         }
     );

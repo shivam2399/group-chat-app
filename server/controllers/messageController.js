@@ -101,8 +101,78 @@ const getMessages = async (req, res) => {
     }
 };
 
+const createMediaMessage = async (req, res) => {
+    try {
+        const {
+            groupId,
+            mediaKey,
+            mediaUrl,
+            mediaName,
+            mediaSize,
+            mimeType,
+            messageType,
+            content
+        } = req.body;
+
+        if (!groupId) {
+            return res.status(400).json({
+                success: false,
+                message: "Group ID is required"
+            });
+        }
+
+        if (!mediaKey || !mediaName || !mimeType)  {
+            return res.status(400).json({
+                success: false,
+                message: "Media information is required"
+            });
+        }
+
+        const message =
+            await messageService.createMediaMessage({
+                senderId: req.user.id,
+                groupId,
+                mediaKey,
+                mediaUrl,
+                mediaName,
+                mediaSize,
+                mimeType,
+                messageType,
+                content
+            });
+
+        return res.status(201).json({
+            success: true,
+            message: "Media message created successfully",
+            data: message
+        });
+
+    } catch (error) {
+        console.error(
+            "CREATE MEDIA MESSAGE ERROR:",
+            error
+        );
+
+        if (
+            error.message ===
+            "You are not a member of this group"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to create media message"
+        });
+    }
+};
+
 
 module.exports = {
     createMessage,
-    getMessages
+    getMessages,
+    createMediaMessage
 };

@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const groupRoutes = require("./routes/groupRoutes");
 const personalMessageRoutes = require("./routes/personalMessageRoutes");
+const mediaRoutes = require("./routes/mediaRoutes");
 
 const app = express();
 
@@ -17,5 +18,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/personal-messages", personalMessageRoutes);
+app.use("/api/media", mediaRoutes);
 
 module.exports = app;

@@ -1,6 +1,7 @@
 const { Op } = require("sequelize")
 const DirectMessage = require("../models/DirectMessage");
 const User = require("../models/User");
+const { generatePresignedUrl } = require("./s3Service");
 
 /*
     Send a personal message
@@ -95,11 +96,86 @@ const getPersonalMessages = async (
             ]
         });
 
-    return messages;
+    const messagesWithSignedUrls =
+        await Promise.all(
+            messages.map(async (message) => {
+
+                if (
+                    message.messageType !== "text" &&
+                    message.mediaKey
+                ) {
+                    const signedUrl =
+                        await generatePresignedUrl(
+                            message.mediaKey
+                        );
+
+                    message.mediaUrl = signedUrl;
+                }
+
+                return message;
+            })
+        );
+
+    return messagesWithSignedUrls;
+};
+
+const createPersonalMediaMessage = async ({
+    senderId,
+    receiverId,
+    mediaKey,
+    mediaUrl,
+    mediaName,
+    mediaSize,
+    mimeType,
+    messageType,
+    content = null
+}) => {
+
+    const receiver =
+        await User.findByPk(receiverId);
+
+    if (!receiver) {
+        throw new Error("User does not exist");
+    }
+
+    const message =
+        await DirectMessage.create({
+            senderId,
+            receiverId,
+            content,
+            messageType,
+            mediaKey,
+            mediaUrl,
+            mediaName,
+            mediaSize,
+            mimeType
+        });
+
+    const messageWithUsers =
+        await DirectMessage.findByPk(
+            message.id,
+            {
+                include: [
+                    {
+                        model: User,
+                        as: "sender",
+                        attributes: ["id", "name"]
+                    },
+                    {
+                        model: User,
+                        as: "receiver",
+                        attributes: ["id", "name"]
+                    }
+                ]
+            }
+        );
+
+    return messageWithUsers;
 };
 
 
 module.exports = {
     sendPersonalMessage,
-    getPersonalMessages
+    getPersonalMessages,
+    createPersonalMediaMessage
 };

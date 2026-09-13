@@ -1263,6 +1263,85 @@ body {
     background: #450a0a;
 }
 
+.chat-image {
+    display: block;
+    max-width: 280px;
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.chat-video {
+    display: block;
+    max-width: 320px;
+    max-height: 300px;
+    border-radius: 10px;
+}
+
+.chat-audio {
+    display: block;
+    max-width: 320px;
+}
+
+.chat-file {
+    display: inline-block;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.attachment-preview {
+    padding: 8px 12px;
+}
+
+.attachment-preview-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.attachment-preview-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.attachment-preview-icon {
+    font-size: 30px;
+}
+
+.attachment-preview-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.attachment-preview-name {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-preview-size {
+    font-size: 12px;
+}
+
+.attachment-preview-remove {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.media-caption {
+    margin-top: 8px;
+    word-break: break-word;
+}
+
 @media (max-width: 600px) {
 
     .sidebar {

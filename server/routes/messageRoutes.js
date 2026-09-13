@@ -2,7 +2,8 @@ const express = require("express");
 
 const {
     createMessage,
-    getMessages
+    getMessages,
+    createMediaMessage
 } = require("../controllers/messageController");
 
 const authenticateToken =
@@ -22,6 +23,12 @@ router.get(
     "/:groupId",
     authenticateToken,
     getMessages
+);
+
+router.post(
+    "/media",
+    authenticateToken,
+    createMediaMessage
 );
 
 

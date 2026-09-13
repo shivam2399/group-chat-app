@@ -22,7 +22,44 @@ const DirectMessage = sequelize.define(
 
         content: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: true
+        },
+
+        messageType: {
+            type: DataTypes.ENUM(
+                "text",
+                "image",
+                "file",
+                "video",
+                "audio"
+            ),
+            allowNull: false,
+            defaultValue: "text"
+        },
+
+        mediaKey: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+
+        mediaUrl: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+
+        mediaName: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+
+        mediaSize: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+
+        mimeType: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     },
     {

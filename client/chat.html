@@ -302,6 +302,7 @@
 
 
                 <button
+                    id="attach-file-btn"
                     class="input-action"
                     title="Attach file"
                     type="button"
@@ -309,9 +310,15 @@
                     📎
                 </button>
 
+                <input
+                    type="file"
+                    id="file-input"
+                    hidden
+                >
 
                 <input
                     type="text"
+                    id="message-input"
                     placeholder="Type a message..."
                     autocomplete="off"
                 >
@@ -323,6 +330,12 @@
                 >
                     Send
                 </button>
+
+                <div
+                    id="attachment-preview"
+                    class="attachment-preview"
+                    hidden
+                ></div>
 
             </footer>
 

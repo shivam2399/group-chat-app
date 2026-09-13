@@ -2,7 +2,8 @@ const express = require("express");
 
 const {
     sendPersonalMessage,
-    getPersonalMessages
+    getPersonalMessages,
+    createPersonalMediaMessage
 } = require("../controllers/personalMessageController");
 
 const authenticateToken =
@@ -27,6 +28,12 @@ router.get(
     "/:userId",
     authenticateToken,
     getPersonalMessages
+);
+
+router.post(
+    "/media",
+    authenticateToken,
+    createPersonalMediaMessage
 );
 
 

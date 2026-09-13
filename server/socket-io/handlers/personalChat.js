@@ -1,5 +1,6 @@
 const personalMessageService = require("../../services/personalMessageService");
 const User = require("../../models/User");
+const { generatePresignedUrl } = require("../../services/s3Service");
 
 
 const getPersonalRoom = (
@@ -114,77 +115,188 @@ const registerPersonalChatHandlers = (
     /* ==================== NEW MESSAGE ==================== */
 
     socket.on(
-    "send_personal_message",
-    async ({ receiverId, content }) => {
+        "send_personal_message",
+        async ({
+            receiverId,
+            content,
+            messageType = "text",
+            mediaKey = null,
+            mediaUrl = null,
+            mediaName = null,
+            mediaSize = null,
+            mimeType = null
+        }) => {
 
-        try {
+            try {
 
-            console.log(
-                "PERSONAL MESSAGE REQUEST:",
-                {
-                    receiverId,
-                    content
-                }
-            );
-
-            if (
-                !receiverId ||
-                !content?.trim()
-            ) {
-                return;
-            }
-
-            const senderId =
-                socket.user.id;
-
-            const cleanContent =
-                content.trim();
-
-            const message =
-                await personalMessageService
-                    .sendPersonalMessage({
-                        senderId,
+                console.log(
+                    "PERSONAL MESSAGE REQUEST:",
+                    {
                         receiverId,
-                        content: cleanContent
-                    });
-
-            console.log(
-                "PERSONAL MESSAGE SAVED:",
-                message
-            );
-
-            const roomName =
-                getPersonalRoom(
-                    senderId,
-                    receiverId
+                        content,
+                        messageType,
+                        mediaKey,
+                        mediaUrl,
+                        mediaName,
+                        mediaSize,
+                        mimeType
+                    }
                 );
 
-            io.to(roomName).emit(
-                "new_personal_message",
-                message
-            );
-
-            console.log(
-                `Personal message sent: ${senderId} → ${receiverId}`
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Failed to send personal message:",
-                error
-            );
-
-            socket.emit(
-                "personal_message_error",
-                {
-                    message:
-                        "Failed to send personal message"
+                if (!receiverId) {
+                    return;
                 }
-            );
+
+                const senderId = socket.user.id;
+
+                /*
+                * =========================
+                * TEXT MESSAGE
+                * =========================
+                */
+
+                if (messageType === "text") {
+
+                    if (!content?.trim()) {
+                        return;
+                    }
+
+                    const cleanContent =
+                        content.trim();
+
+                    const message =
+                        await personalMessageService
+                            .sendPersonalMessage({
+                                senderId,
+                                receiverId,
+                                content: cleanContent
+                            });
+
+                    console.log(
+                        "PERSONAL MESSAGE SAVED:",
+                        message
+                    );
+
+                    const roomName =
+                        getPersonalRoom(
+                            senderId,
+                            receiverId
+                        );
+
+                    io.to(roomName).emit(
+                        "new_personal_message",
+                        message
+                    );
+
+                    return;
+                }
+
+                /*
+                * =========================
+                * MEDIA MESSAGE
+                * =========================
+                */
+
+                const allowedMessageTypes = [
+                    "image",
+                    "file",
+                    "video",
+                    "audio"
+                ];
+
+                if (
+                    !allowedMessageTypes.includes(
+                        messageType
+                    )
+                ) {
+
+                    socket.emit(
+                        "personal_message_error",
+                        {
+                            message:
+                                "Invalid message type"
+                        }
+                    );
+
+                    return;
+                }
+
+                if (
+                    !mediaKey ||
+                    !mediaName ||
+                    !mimeType
+                ) {
+
+                    socket.emit(
+                        "personal_message_error",
+                        {
+                            message:
+                                "Media information is required"
+                        }
+                    );
+
+                    return;
+                }
+
+                const message =
+                    await personalMessageService
+                        .createPersonalMediaMessage({
+                            senderId,
+                            receiverId,
+                            content:
+                                content?.trim() || null,
+                            messageType,
+                            mediaKey,
+                            mediaUrl,
+                            mediaName,
+                            mediaSize,
+                            mimeType
+                        });
+
+                console.log(
+                    "PERSONAL MEDIA MESSAGE SAVED:",
+                    message
+                );
+
+                const signedUrl =
+                    await generatePresignedUrl(
+                        message.mediaKey
+                    );
+
+                message.mediaUrl = signedUrl;
+
+                const roomName =
+                    getPersonalRoom(
+                        senderId,
+                        receiverId
+                    );
+
+                io.to(roomName).emit(
+                    "new_personal_message",
+                    message
+                );
+
+                console.log(
+                    `Personal media message sent: ${senderId} → ${receiverId}`
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to send personal message:",
+                    error
+                );
+
+                socket.emit(
+                    "personal_message_error",
+                    {
+                        message:
+                            "Failed to send personal message"
+                    }
+                );
+            }
         }
-    }
-);
+    );
 };
 
 
