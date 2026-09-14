@@ -1,5 +1,6 @@
 const { Op } = require("sequelize")
 const DirectMessage = require("../models/DirectMessage");
+const ArchivedDirectMessage = require("../models/ArchivedDirectMessage");
 const User = require("../models/User");
 const { generatePresignedUrl } = require("./s3Service");
 
@@ -58,67 +59,138 @@ const sendPersonalMessage = async ({
     current user and another user
 */
 const getPersonalMessages = async (
-    userId,
-    otherUserId
-) => {
+        userId,
+        otherUserId,
+        page = 1,
+        limit = 50
+    ) => {
 
-    const messages =
-        await DirectMessage.findAll({
+        const offset = (page - 1) * limit;
 
-            where: {
-                [Op.or]: [
+
+        // Get active messages
+        const activeMessages =
+            await DirectMessage.findAll({
+                where: {
+                    [Op.or]: [
+                        {
+                            senderId: userId,
+                            receiverId: otherUserId
+                        },
+                        {
+                            senderId: otherUserId,
+                            receiverId: userId
+                        }
+                    ]
+                },
+                include: [
                     {
-                        senderId: userId,
-                        receiverId: otherUserId
+                        model: User,
+                        as: "sender",
+                        attributes: ["id", "name"]
                     },
                     {
-                        senderId: otherUserId,
-                        receiverId: userId
+                        model: User,
+                        as: "receiver",
+                        attributes: ["id", "name"]
                     }
+                ],
+                order: [
+                    ["createdAt", "DESC"]
                 ]
-            },
+            });
 
-            include: [
-                {
-                    model: User,
-                    as: "sender",
-                    attributes: ["id", "name"]
+
+        // Get archived messages
+        const archivedMessages =
+            await ArchivedDirectMessage.findAll({
+                where: {
+                    [Op.or]: [
+                        {
+                            senderId: userId,
+                            receiverId: otherUserId
+                        },
+                        {
+                            senderId: otherUserId,
+                            receiverId: userId
+                        }
+                    ]
                 },
-                {
-                    model: User,
-                    as: "receiver",
-                    attributes: ["id", "name"]
-                }
-            ],
+                include: [
+                    {
+                        model: User,
+                        as: "sender",
+                        attributes: ["id", "name"]
+                    },
+                    {
+                        model: User,
+                        as: "receiver",
+                        attributes: ["id", "name"]
+                    }
+                ],
+                order: [
+                    ["createdAt", "DESC"]
+                ]
+            });
 
-            order: [
-                ["createdAt", "ASC"]
-            ]
-        });
 
-    const messagesWithSignedUrls =
-        await Promise.all(
-            messages.map(async (message) => {
+        // Combine both sources
+        const allMessages = [
+            ...activeMessages,
+            ...archivedMessages
+        ];
 
-                if (
-                    message.messageType !== "text" &&
-                    message.mediaKey
-                ) {
-                    const signedUrl =
-                        await generatePresignedUrl(
-                            message.mediaKey
-                        );
 
-                    message.mediaUrl = signedUrl;
-                }
-
-                return message;
-            })
+        // Sort newest → oldest
+        allMessages.sort(
+            (a, b) =>
+                new Date(b.createdAt) -
+                new Date(a.createdAt)
         );
 
-    return messagesWithSignedUrls;
-};
 
+        // Apply pagination
+        const paginatedMessages =
+            allMessages.slice(
+                offset,
+                offset + limit
+            );
+
+
+        // Generate fresh signed URLs
+        const messagesWithSignedUrls =
+            await Promise.all(
+                paginatedMessages.map(
+                    async (message) => {
+
+                        if (
+                            message.messageType !== "text" &&
+                            message.mediaKey
+                        ) {
+                            const signedUrl =
+                                await generatePresignedUrl(
+                                    message.mediaKey
+                                );
+
+                            message.mediaUrl =
+                                signedUrl;
+                        }
+
+                        return message;
+                    }
+                )
+            );
+
+
+        return {
+            messages: messagesWithSignedUrls,
+            page,
+            limit,
+            hasMore:
+                offset + limit <
+                allMessages.length
+        };
+    };
 const createPersonalMediaMessage = async ({
     senderId,
     receiverId,

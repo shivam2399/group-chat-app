@@ -14,6 +14,10 @@ require("./models/Message");
 require("./models/DirectMessage");
 require("./models/GroupMember");
 require("./models/associations");
+require("./models/ArchivedMessage");
+require("./models/ArchivedDirectMessage");
+
+const startArchiveJob = require("./jobs/archiveJob");
 
 const initializeSocket = require("./socket-io");
 const PORT = process.env.PORT || 5000;
@@ -24,7 +28,7 @@ const startServer = async () => {
     await connectDB();
     await sequelize.sync();
     console.log("Database synchronized");
-
+    startArchiveJob();
     server.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
     });

@@ -3,6 +3,8 @@ const Group = require("./Group");
 const Message = require("./Message");
 const DirectMessage = require("./DirectMessage");
 const GroupMember = require("./GroupMember");
+const ArchivedMessage = require("./ArchivedMessage");
+const ArchivedDirectMessage = require("./ArchivedDirectMessage");
 
 
 User.hasMany(Message, {
@@ -64,4 +66,45 @@ Group.hasMany(GroupMember, {
 GroupMember.belongsTo(Group, {
     foreignKey: "groupId",
     as: "group"
+});
+
+User.hasMany(ArchivedMessage, {
+    foreignKey: "senderId",
+    as: "archivedMessages"
+});
+
+ArchivedMessage.belongsTo(User, {
+    foreignKey: "senderId",
+    as: "sender"
+});
+
+Group.hasMany(ArchivedMessage, {
+    foreignKey: "groupId",
+    as: "archivedMessages"
+});
+
+ArchivedMessage.belongsTo(Group, {
+    foreignKey: "groupId",
+    as: "group"
+});
+
+
+User.hasMany(ArchivedDirectMessage, {
+    foreignKey: "senderId",
+    as: "sentArchivedDirectMessages"
+});
+
+User.hasMany(ArchivedDirectMessage, {
+    foreignKey: "receiverId",
+    as: "receivedArchivedDirectMessages"
+});
+
+ArchivedDirectMessage.belongsTo(User, {
+    foreignKey: "senderId",
+    as: "sender"
+});
+
+ArchivedDirectMessage.belongsTo(User, {
+    foreignKey: "receiverId",
+    as: "receiver"
 });

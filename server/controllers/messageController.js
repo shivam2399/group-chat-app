@@ -65,6 +65,7 @@ const createMessage = async (req, res) => {
 
 const getMessages = async (req, res) => {
     try {
+
         const { groupId } = req.params;
 
         if (!groupId) {
@@ -74,7 +75,23 @@ const getMessages = async (req, res) => {
             });
         }
 
-        const messages = await messageService.getMessagesByGroup(groupId, req.user.id);
+
+        // Pagination
+        const page =
+            parseInt(req.query.page) || 1;
+
+        const limit =
+            parseInt(req.query.limit) || 50;
+
+
+        const messages =
+            await messageService.getMessagesByGroup(
+                Number(groupId),
+                req.user.id,
+                page,
+                limit
+            );
+
 
         return res.status(200).json({
             success: true,
@@ -82,7 +99,12 @@ const getMessages = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Failed to fetch messages:", error);
+
+        console.error(
+            "Failed to fetch messages:",
+            error
+        );
+
 
         if (
             error.message ===
@@ -94,13 +116,13 @@ const getMessages = async (req, res) => {
             });
         }
 
+
         return res.status(500).json({
             success: false,
             message: "Failed to fetch messages"
         });
     }
 };
-
 const createMediaMessage = async (req, res) => {
     try {
         const {

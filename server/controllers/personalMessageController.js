@@ -84,11 +84,19 @@ const getPersonalMessages = async (req, res) => {
         const userId =
             req.user.id;
 
+        const page =
+            parseInt(req.query.page) || 1;
+
+        const limit =
+            parseInt(req.query.limit) || 50;
+
         const messages =
             await personalMessageService
                 .getPersonalMessages(
                     userId,
-                    Number(otherUserId)
+                    Number(otherUserId),
+                    page,
+                    limit
                 );
 
         return res.status(200).json({

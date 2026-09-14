@@ -10,7 +10,12 @@ if (!token || !user) {
 let currentGroupId = null;
 let currentPersonalUserId = null;
 let selectedFile = null;
-
+let personalMessagesPage = 1;
+let personalMessagesHasMore = false;
+let loadingPersonalMessages = false;
+let groupMessagesPage = 1;
+let groupMessagesHasMore = false;
+let loadingGroupMessages = false;
 
 /* ==================== DOM ELEMENTS ==================== */
 
@@ -590,6 +595,9 @@ function renderUsers(users) {
             clearPersonalUnreadCount(userElement);
             currentGroupId = null;
             currentPersonalUserId = otherUserId;
+            personalMessagesPage = 1;
+            personalMessagesHasMore = false;
+            messageInput.value = "";
             messageInput.value = "";
             socket.emit("join_room", {
                 userId: otherUserId
@@ -778,6 +786,8 @@ function attachGroupListeners() {
                 clearUnreadCount(group);
                 currentPersonalUserId = null;
                 currentGroupId = newGroupId;
+                groupMessagesPage = 1;
+                groupMessagesHasMore = false;
 
                 /*
                     Join new room.
@@ -929,13 +939,24 @@ function updatePersonalPreview(message) {
 
 /* ==================== LOAD MESSAGES ==================== */
 
-async function loadMessages(groupId) {
+async function loadMessages(
+    groupId,
+    page = 1,
+    appendOlder = false
+) {
 
     try {
 
+        if (loadingGroupMessages) {
+            return;
+        }
+
+        loadingGroupMessages = true;
+
+
         const response =
             await fetch(
-                `${API_BASE_URL}/messages/${groupId}`,
+                `${API_BASE_URL}/messages/${groupId}?page=${page}&limit=50`,
                 {
                     method: "GET",
                     headers: {
@@ -945,8 +966,10 @@ async function loadMessages(groupId) {
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if (!response.ok) {
             throw new Error(
@@ -954,15 +977,96 @@ async function loadMessages(groupId) {
             );
         }
 
-        chatMessages.innerHTML = "";
 
-        data.data.forEach(
-            (message) => {
-                addMessageToUI(message);
+        const messages =
+            data.data.messages;
+
+
+        groupMessagesHasMore =
+            data.data.hasMore;
+
+
+        console.log(
+            "GROUP MESSAGE HISTORY:",
+            {
+                page: data.data.page,
+                limit: data.data.limit,
+                hasMore: data.data.hasMore,
+                count: messages.length
             }
         );
 
-        scrollToBottom();
+
+        /*
+            Initial load
+        */
+
+        if (!appendOlder) {
+
+            chatMessages.innerHTML = "";
+
+            messages.forEach((message) => {
+                addMessageToUI(message);
+            });
+
+            groupMessagesPage =
+                page;
+
+            scrollToBottom();
+
+        }
+
+
+        /*
+            Loading older messages
+        */
+
+        else {
+
+            const previousScrollHeight =
+                chatMessages.scrollHeight;
+
+            const previousScrollTop =
+                chatMessages.scrollTop;
+
+
+            /*
+                API returns newest → oldest.
+
+                Reverse the messages before
+                prepending so chronological
+                order is maintained.
+            */
+
+            messages
+                .slice()
+                .reverse()
+                .forEach((message) => {
+
+                    addMessageToUI(
+                        message,
+                        true
+                    );
+
+                });
+
+
+            const newScrollHeight =
+                chatMessages.scrollHeight;
+
+
+            chatMessages.scrollTop =
+                previousScrollTop +
+                (
+                    newScrollHeight -
+                    previousScrollHeight
+                );
+
+
+            groupMessagesPage =
+                page;
+        }
+
 
     } catch (error) {
 
@@ -974,13 +1078,29 @@ async function loadMessages(groupId) {
         alert(
             "Failed to load messages."
         );
+
+    } finally {
+
+        loadingGroupMessages = false;
     }
 }
 
-async function loadPersonalMessages(userId) {
+async function loadPersonalMessages(
+    userId,
+    page = 1,
+    appendOlder = false
+) {
     try {
+
+        if (loadingPersonalMessages) {
+            return;
+        }
+
+        loadingPersonalMessages = true;
+
+
         const response = await fetch(
-            `${API_BASE_URL}/personal-messages/${userId}`,
+            `${API_BASE_URL}/personal-messages/${userId}?page=${page}&limit=50`,
             {
                 method: "GET",
                 headers: {
@@ -990,21 +1110,77 @@ async function loadPersonalMessages(userId) {
             }
         );
 
+
         const data = await response.json();
+
 
         if (!response.ok) {
             throw new Error(data.message);
         }
 
-        chatMessages.innerHTML = "";
 
-        data.data.forEach((message) => {
-            addMessageToUI(message);
-        });
+        const messages =
+            data.data.messages;
 
-        scrollToBottom();
+
+        personalMessagesHasMore =
+            data.data.hasMore;
+
+
+        console.log(
+            "PERSONAL MESSAGE HISTORY:",
+            {
+                page: data.data.page,
+                limit: data.data.limit,
+                hasMore: data.data.hasMore,
+                count: messages.length
+            }
+        );
+
+
+        if (!appendOlder) {
+
+            chatMessages.innerHTML = "";
+
+            messages.forEach((message) => {
+                addMessageToUI(message);
+            });
+
+            personalMessagesPage = page;
+
+            scrollToBottom();
+
+        } else {
+
+            const previousScrollHeight =
+                chatMessages.scrollHeight;
+
+            const previousScrollTop =
+                chatMessages.scrollTop;
+
+            messages
+                .slice()
+                .reverse()
+                .forEach((message) => {
+                    addMessageToUI(
+                        message,
+                        true
+                    );
+                });
+
+            const newScrollHeight =
+                chatMessages.scrollHeight;
+
+            chatMessages.scrollTop =
+                previousScrollTop +
+                (newScrollHeight - previousScrollHeight);
+
+            personalMessagesPage = page;
+        }
+
 
     } catch (error) {
+
         console.error(
             "Failed to load personal messages:",
             error
@@ -1013,8 +1189,58 @@ async function loadPersonalMessages(userId) {
         alert(
             "Failed to load personal messages."
         );
+
+    } finally {
+
+        loadingPersonalMessages = false;
     }
 }
+
+chatMessages.addEventListener(
+    "scroll",
+    async () => {
+
+        if (
+            chatMessages.scrollTop <= 50 &&
+            personalMessagesHasMore &&
+            !loadingPersonalMessages &&
+            currentPersonalUserId
+        ) {
+
+            const nextPage =
+                personalMessagesPage + 1;
+
+            await loadPersonalMessages(
+                currentPersonalUserId,
+                nextPage,
+                true
+            );
+        }
+    }
+);
+
+chatMessages.addEventListener(
+    "scroll",
+    async () => {
+
+        if (
+            chatMessages.scrollTop <= 50 &&
+            groupMessagesHasMore &&
+            !loadingGroupMessages &&
+            currentGroupId
+        ) {
+
+            const nextPage =
+                groupMessagesPage + 1;
+
+            await loadMessages(
+                currentGroupId,
+                nextPage,
+                true
+            );
+        }
+    }
+);
 
 function clearActiveChats() {
     document
@@ -1026,7 +1252,7 @@ function clearActiveChats() {
 
 /* ==================== ADD MESSAGE TO UI ==================== */
 
-function addMessageToUI(message) {
+function addMessageToUI(message, prepend = false) {
 
     const messageElement =
         document.createElement("div");
@@ -1272,9 +1498,11 @@ function addMessageToUI(message) {
         messageContent
     );
 
-    chatMessages.appendChild(
-        messageElement
-    );
+    if (prepend) {
+        chatMessages.prepend(messageElement);
+    } else {
+        chatMessages.appendChild(messageElement);
+    }
 }
 
 async function uploadMediaFile(file) {

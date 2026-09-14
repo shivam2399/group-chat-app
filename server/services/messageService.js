@@ -2,6 +2,8 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const GroupMember = require("../models/GroupMember");
 const { generatePresignedUrl } = require("./s3Service");
+const { Op } = require("sequelize");
+const ArchivedMessage = require("../models/ArchivedMessage");
 
 const createMessage = async ({
     senderId,
@@ -49,8 +51,12 @@ const createMessage = async ({
 
 const getMessagesByGroup = async (
     groupId,
-    userId
+    userId,
+    page = 1,
+    limit = 50
 ) => {
+
+    // 1. Verify group membership
 
     const membership =
         await GroupMember.findOne({
@@ -66,42 +72,118 @@ const getMessagesByGroup = async (
         );
     }
 
-    const messages = await Message.findAll({
-        where: {
-            groupId: groupId
-        },
-        include: [
-            {
-                model: User,
-                as: "sender",
-                attributes: ["id", "name"]
-            }
-        ],
-        order: [["createdAt", "ASC"]]
-    });
 
-    // Generate temporary URLs for media messages
-    const messagesWithSignedUrls =
-        await Promise.all(
-            messages.map(async (message) => {
+    // 2. Calculate pagination
 
-                if (
-                    message.messageType !== "text" &&
-                    message.mediaKey
-                ) {
-                    const signedUrl =
-                        await generatePresignedUrl(
-                            message.mediaKey
-                        );
+    const offset =
+        (page - 1) * limit;
 
-                    message.mediaUrl = signedUrl;
+
+    // 3. Get active messages
+
+    const activeMessages =
+        await Message.findAll({
+            where: {
+                groupId
+            },
+            include: [
+                {
+                    model: User,
+                    as: "sender",
+                    attributes: ["id", "name"]
                 }
+            ],
+            order: [
+                ["createdAt", "DESC"]
+            ]
+        });
 
-                return message;
-            })
+
+    // 4. Get archived messages
+
+    const archivedMessages =
+        await ArchivedMessage.findAll({
+            where: {
+                groupId
+            },
+            include: [
+                {
+                    model: User,
+                    as: "sender",
+                    attributes: ["id", "name"]
+                }
+            ],
+            order: [
+                ["createdAt", "DESC"]
+            ]
+        });
+
+
+    // 5. Combine both sources
+
+    const allMessages = [
+        ...activeMessages,
+        ...archivedMessages
+    ];
+
+
+    // 6. Sort newest → oldest
+
+    allMessages.sort(
+        (a, b) =>
+            new Date(b.createdAt) -
+            new Date(a.createdAt)
+    );
+
+
+    // 7. Apply pagination
+
+    const paginatedMessages =
+        allMessages.slice(
+            offset,
+            offset + limit
         );
 
-    return messagesWithSignedUrls;
+
+    // 8. Generate fresh S3 URLs
+
+    const messagesWithSignedUrls =
+        await Promise.all(
+            paginatedMessages.map(
+                async (message) => {
+
+                    if (
+                        message.messageType !== "text" &&
+                        message.mediaKey
+                    ) {
+
+                        const signedUrl =
+                            await generatePresignedUrl(
+                                message.mediaKey
+                            );
+
+                        message.mediaUrl =
+                            signedUrl;
+                    }
+
+                    return message;
+                }
+            )
+        );
+
+
+    return {
+        messages:
+            messagesWithSignedUrls,
+
+        page,
+
+        limit,
+
+        hasMore:
+            offset + limit <
+            allMessages.length
+    };
 };
 
 const createMediaMessage = async ({
