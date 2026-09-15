@@ -115,6 +115,7 @@ body {
 
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
 
     gap: 6px;
 
@@ -123,6 +124,96 @@ body {
     background-color: #111827;
 
     border-top: 1px solid #1e293b;
+}
+
+/* ========================================
+   AI TYPING SUGGESTIONS
+======================================== */
+
+.ai-typing-suggestions {
+    width: 100%;
+
+    display: flex;
+    gap: 8px;
+
+    padding: 0 0 4px 0;
+
+    overflow-x: auto;
+}
+
+.ai-typing-suggestions:empty {
+    display: none;
+}
+
+.ai-typing-suggestion {
+    flex-shrink: 0;
+
+    padding: 7px 12px;
+
+    border: 1px solid #334155;
+    border-radius: 16px;
+
+    background-color: #1e293b;
+    color: #cbd5e1;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.ai-typing-suggestion:hover {
+    background-color: #334155;
+    color: #ffffff;
+}
+
+/* ========================================
+   AI SMART REPLIES
+======================================== */
+
+.ai-smart-replies {
+    width: 100%;
+
+    display: flex;
+    gap: 8px;
+
+    padding: 0 0 4px 0;
+
+    overflow-x: auto;
+}
+
+.ai-smart-replies:empty {
+    display: none;
+}
+
+.ai-smart-reply {
+    flex-shrink: 0;
+
+    padding: 7px 12px;
+
+    border: 1px solid #334155;
+    border-radius: 16px;
+
+    background-color: #1e293b;
+    color: #cbd5e1;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.ai-smart-reply:hover {
+    background-color: #334155;
+    color: #ffffff;
 }
 
 

@@ -16,6 +16,8 @@ let loadingPersonalMessages = false;
 let groupMessagesPage = 1;
 let groupMessagesHasMore = false;
 let loadingGroupMessages = false;
+let typingSuggestionTimer = null;
+let typingSuggestionRequestId = 0;
 
 /* ==================== DOM ELEMENTS ==================== */
 
@@ -51,6 +53,8 @@ const addMembersError = document.getElementById("add-members-error");
 const attachFileBtn = document.getElementById("attach-file-btn");
 const fileInput = document.getElementById("file-input");
 const attachmentPreview = document.getElementById("attachment-preview");
+const aiTypingSuggestions = document.getElementById("ai-typing-suggestions");
+const aiSmartReplies = document.getElementById("ai-smart-replies");
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
@@ -700,6 +704,137 @@ function clearPersonalUnreadCount(userElement) {
         "none";
 }
 
+const generateTypingSuggestions = async () => {
+    const draft = messageInput.value.trim();
+
+    if (!draft || draft.length < 3) {
+        aiTypingSuggestions.innerHTML = "";
+        return;
+    }
+
+    const requestId = ++typingSuggestionRequestId;
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/ai/typing-suggestions`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    draft,
+                    recentMessages: getRecentMessagesForAI()
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        // Ignore an older Gemini response
+        if (requestId !== typingSuggestionRequestId) {
+            return;
+        }
+
+        if (!data.success) {
+            aiTypingSuggestions.innerHTML = "";
+            return;
+        }
+
+        const suggestions = data.data.suggestions || [];
+
+        aiTypingSuggestions.innerHTML = "";
+
+        suggestions.forEach((suggestion) => {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "ai-typing-suggestion";
+            button.textContent = suggestion;
+
+            button.addEventListener("click", () => {
+                messageInput.value = suggestion;
+                messageInput.focus();
+
+                aiTypingSuggestions.innerHTML = "";
+            });
+
+            aiTypingSuggestions.appendChild(button);
+        });
+
+    } catch (error) {
+        console.error(
+            "Typing suggestion error:",
+            error
+        );
+
+        aiTypingSuggestions.innerHTML = "";
+    }
+};
+
+const generateSmartReplies = async (incomingMessage) => {
+    if (!incomingMessage?.trim()) {
+        aiSmartReplies.innerHTML = "";
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/ai/smart-replies`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    incomingMessage: incomingMessage.trim(),
+                    recentMessages: getRecentMessagesForAI()
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+            aiSmartReplies.innerHTML = "";
+            return;
+        }
+
+        const replies = data.data.replies || [];
+
+        aiSmartReplies.innerHTML = "";
+
+        replies.forEach((reply) => {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "ai-smart-reply";
+            button.textContent = reply;
+
+            button.addEventListener("click", () => {
+                messageInput.value = reply;
+
+                messageInput.focus();
+
+                aiSmartReplies.innerHTML = "";
+                aiTypingSuggestions.innerHTML = "";
+            });
+
+            aiSmartReplies.appendChild(button);
+        });
+
+    } catch (error) {
+        console.error(
+            "Smart reply error:",
+            error
+        );
+
+        aiSmartReplies.innerHTML = "";
+    }
+};
+
 function formatMessageTime(createdAt) {
     const date = new Date(createdAt);
     const now = new Date();
@@ -1005,9 +1140,12 @@ async function loadMessages(
 
             chatMessages.innerHTML = "";
 
-            messages.forEach((message) => {
-                addMessageToUI(message);
-            });
+            messages
+                .slice()
+                .reverse()
+                .forEach((message) => {
+                    addMessageToUI(message);
+                });
 
             groupMessagesPage =
                 page;
@@ -1039,8 +1177,6 @@ async function loadMessages(
             */
 
             messages
-                .slice()
-                .reverse()
                 .forEach((message) => {
 
                     addMessageToUI(
@@ -1142,9 +1278,12 @@ async function loadPersonalMessages(
 
             chatMessages.innerHTML = "";
 
-            messages.forEach((message) => {
-                addMessageToUI(message);
-            });
+            messages
+                .slice()
+                .reverse()
+                .forEach((message) => {
+                    addMessageToUI(message);
+                });
 
             personalMessagesPage = page;
 
@@ -1159,8 +1298,6 @@ async function loadPersonalMessages(
                 chatMessages.scrollTop;
 
             messages
-                .slice()
-                .reverse()
                 .forEach((message) => {
                     addMessageToUI(
                         message,
@@ -1777,6 +1914,50 @@ async function sendMessage() {
         messageInput.focus();
     }
 }
+
+const getRecentMessagesForAI = () => {
+    const messageElements =
+        chatMessages.querySelectorAll(".message");
+
+    const messages = [];
+
+    Array.from(messageElements)
+        .slice(-10)
+        .forEach((element) => {
+            const contentElement =
+                element.querySelector(".message-content");
+
+            if (!contentElement) return;
+
+            const content =
+                contentElement.textContent.trim();
+
+            if (!content) return;
+
+            const isOwnMessage =
+                element.classList.contains("own");
+
+            messages.push({
+                sender: isOwnMessage ? "You" : "Other",
+                content
+            });
+        });
+
+    return messages;
+};
+
+messageInput.addEventListener("input", () => {
+    clearTimeout(typingSuggestionTimer);
+
+    typingSuggestionRequestId++;
+
+    aiTypingSuggestions.innerHTML = "";
+    aiSmartReplies.innerHTML = "";
+
+    typingSuggestionTimer = setTimeout(() => {
+        generateTypingSuggestions();
+    }, 500);
+});
 
 createGroupBtn.addEventListener(
     "click",
@@ -2434,6 +2615,12 @@ socket.on(
             addMessageToUI(message);
 
             scrollToBottom();
+
+            // Generate AI smart replies only
+            // for incoming messages
+            if (senderId !== loggedInUserId) {
+                generateSmartReplies(message.content);
+            }
 
             return;
         }
