@@ -1,12 +1,21 @@
 {
   "name": "group-chat-app",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Real-time group and personal chat application with AI assistance and media sharing",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "test": "node -e \"require('./server/app'); console.log('App loaded successfully');\""
   },
-  "keywords": [],
+  "keywords": [
+    "chat",
+    "socket.io",
+    "realtime",
+    "express",
+    "mysql",
+    "aws-s3"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

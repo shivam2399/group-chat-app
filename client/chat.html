@@ -12,6 +12,9 @@
 
 <body>
 
+    <!-- Real-time connection status banner -->
+    <div id="connection-banner" class="connection-banner" hidden></div>
+
     <main class="chat-layout">
 
         <!-- ==================== SIDEBAR ==================== -->
@@ -363,10 +366,10 @@
     <script src="./js/api.js"></script>
 
     <!-- Socket.IO client -->
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 
-    <!-- Chat application logic -->
-    <script src="./js/chat.js"></script>
+    <!-- Chat application logic as ES module -->
+    <script type="module" src="./js/chat.js"></script>
 
 </body>
 

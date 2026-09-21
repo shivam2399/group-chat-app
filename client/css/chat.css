@@ -14,6 +14,34 @@ body {
     height: 100%;
 }
 
+/* ========================================
+   REAL-TIME CONNECTION STATUS BANNER
+======================================== */
+.connection-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    z-index: 9999;
+    transition: all 0.3s ease;
+}
+.banner-connected {
+    background-color: #10b981;
+    color: #ffffff;
+}
+.banner-reconnecting {
+    background-color: #f59e0b;
+    color: #1f2937;
+}
+.banner-disconnected {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
 
 /* ========================================
    CHAT APPLICATION LAYOUT
@@ -952,31 +980,28 @@ body {
 
 
 /* ========================================
-   PERSONAL UNREAD COUNT
+   UNREAD COUNT BADGES
 ======================================== */
 
+.unread-count,
 .personal-unread-count {
     display: none;
-
     align-items: center;
     justify-content: center;
-
     min-width: 20px;
     height: 20px;
-
     padding: 0 6px;
-
-    border-radius: 50%;
-
-    background: #4f46e5;
-    color: #ffffff;
-
-    font-size: 11px;
-    font-weight: 700;
-
+    border-radius: 9999px;
+    background-color: #6366f1 !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 20px !important;
+    text-align: center;
     flex-shrink: 0;
+    margin: 0 !important;
+    box-sizing: border-box;
 }
-
 
 /* ========================================
    EMPTY USERS
@@ -990,32 +1015,6 @@ body {
     font-size: 12px;
 
     text-align: center;
-}
-
-/* ========================================
-   UNREAD COUNT
-======================================== */
-
-.unread-count {
-    display: none;
-
-    align-items: center;
-    justify-content: center;
-
-    min-width: 20px;
-    height: 20px;
-
-    padding: 0 6px;
-
-    border-radius: 50%;
-
-    background: #4f46e5;
-    color: white;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    flex-shrink: 0;
 }
 
 /* ========================================
