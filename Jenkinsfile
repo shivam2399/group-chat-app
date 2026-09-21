@@ -9,7 +9,6 @@ pipeline {
     options {
         timeout(time: 15, unit: 'MINUTES')
         disableConcurrentBuilds()
-        ansiColor('xterm')
     }
 
     stages {
@@ -45,17 +44,26 @@ pipeline {
             steps {
                 echo 'Deploying application via PM2 with zero downtime...'
                 sh '''
-                    # Check if PM2 process exists
-                    if pm2 describe group-chat-app > /dev/null 2>&1; then
-                        echo "Group chat app is running. Performing zero-downtime hot reload..."
+                    # If production directory exists, update it to match current commit
+                    if [ -d "/home/ubuntu/group-chat-app" ]; then
+                        echo "Updating production app at /home/ubuntu/group-chat-app..."
+                        cd /home/ubuntu/group-chat-app
+                        git pull origin main || true
+                        cd server && npm ci --omit=dev && cd ..
+                    fi
+
+                    # Zero-downtime hot reload under ubuntu user
+                    if sudo -u ubuntu pm2 describe group-chat-app > /dev/null 2>&1; then
+                        echo "Reloading existing PM2 process with zero downtime..."
+                        sudo -u ubuntu pm2 reload ecosystem.config.js --update-env
+                    elif pm2 describe group-chat-app > /dev/null 2>&1; then
                         pm2 reload ecosystem.config.js --update-env
                     else
                         echo "Starting application with PM2..."
-                        pm2 start ecosystem.config.js --env production
+                        sudo -u ubuntu pm2 start ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
                     fi
                     
-                    # Persist PM2 state across system reboots
-                    pm2 save
+                    sudo -u ubuntu pm2 save || pm2 save || true
                 '''
             }
         }
@@ -64,17 +72,14 @@ pipeline {
             steps {
                 echo 'Executing HTTP health check probe...'
                 sh '''
-                    # Wait 3 seconds for worker readiness
                     sleep 3
-                    
-                    # Probe health endpoint on local loopback
                     STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5000/api/health)
                     
                     if [ "$STATUS_CODE" -eq 200 ]; then
                         echo "Health check PASSED! Status code: $STATUS_CODE"
                     else
                         echo "Health check FAILED! Received HTTP status: $STATUS_CODE"
-                        pm2 logs group-chat-app --lines 40 --nostream
+                        sudo -u ubuntu pm2 logs group-chat-app --lines 40 --nostream || true
                         exit 1
                     fi
                 '''
@@ -88,8 +93,7 @@ pipeline {
         }
         failure {
             echo "Deployment failed! Printing recent PM2 error logs..."
-            sh 'pm2 logs group-chat-app --err --lines 50 --nostream || true'
+            sh 'sudo -u ubuntu pm2 logs group-chat-app --err --lines 50 --nostream || true'
         }
     }
 }
-
