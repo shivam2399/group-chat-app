@@ -54,6 +54,9 @@ const clientPath =
   process.env.CLIENT_STATIC_PATH || path.join(__dirname, "../client");
 app.use(express.static(clientPath));
 
+// Favicon handler to silence noisy 404 logs in browsers
+app.get("/favicon.ico", (req, res) => res.status(204).end());
+
 // Root redirect to login page
 app.get("/", (req, res) => {
   res.redirect("/login.html");

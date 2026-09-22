@@ -28,6 +28,23 @@ export function initSocket() {
     return socketInstance;
   }
 
+  // Fallback if socket.io client failed to load or is blocked by network
+  if (typeof window.io !== "function") {
+    console.warn(
+      "[Socket] window.io is unavailable. Real-time features disabled; falling back to REST."
+    );
+    notifyConnectionState("disconnected", "Socket library unavailable");
+    socketInstance = {
+      connected: false,
+      on: () => {},
+      off: () => {},
+      emit: () => {},
+      disconnect: () => {},
+      io: { on: () => {}, off: () => {} },
+    };
+    return socketInstance;
+  }
+
   const socketHost = getBackendHost();
 
   // Global `io` is provided by the official CDN script in chat.html
@@ -41,6 +58,30 @@ export function initSocket() {
     reconnectionDelayMax: 5000,
     timeout: 10000,
   });
+  try {
+    socketInstance = window.io(socketHost, {
+      auth: {
+        token: state.token,
+      },
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 10000,
+    });
+  } catch (err) {
+    console.error("[Socket] Failed to initialize socket connection:", err);
+    notifyConnectionState("error", err.message);
+    socketInstance = {
+      connected: false,
+      on: () => {},
+      off: () => {},
+      emit: () => {},
+      disconnect: () => {},
+      io: { on: () => {}, off: () => {} },
+    };
+    return socketInstance;
+  }
 
   socketInstance.on("connect", () => {
     console.log("[Socket] Connected:", socketInstance.id);
