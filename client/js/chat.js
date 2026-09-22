@@ -618,6 +618,8 @@ dom.leaveGroupBtn?.addEventListener("click", async () => {
   } finally {
     dom.leaveGroupBtn.disabled = false;
   }
+});
+
 // Logout
 dom.logoutBtn?.addEventListener("click", () => {
   if (confirm("Are you sure you want to log out?")) {
