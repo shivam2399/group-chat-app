@@ -603,6 +603,7 @@ body {
 
 .profile-info {
     min-width: 0;
+    flex: 1;
 }
 
 
@@ -618,6 +619,35 @@ body {
     color: #22c55e;
 
     font-size: 12px;
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid #374151;
+    color: #9ca3af;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.logout-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+}
+
+.logout-btn:hover {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
 }
 
 

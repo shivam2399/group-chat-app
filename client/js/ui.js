@@ -40,6 +40,7 @@ export const dom = {
   aiTypingSuggestions: document.getElementById("ai-typing-suggestions"),
   aiSmartReplies: document.getElementById("ai-smart-replies"),
   connectionBanner: document.getElementById("connection-banner"),
+  logoutBtn: document.getElementById("logout-btn"),
 };
 
 export function renderProfile(user) {

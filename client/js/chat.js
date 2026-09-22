@@ -618,6 +618,13 @@ dom.leaveGroupBtn?.addEventListener("click", async () => {
   } finally {
     dom.leaveGroupBtn.disabled = false;
   }
+// Logout
+dom.logoutBtn?.addEventListener("click", () => {
+  if (confirm("Are you sure you want to log out?")) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "./login.html";
+  }
 });
 
 /* ==================== INITIALIZE APP ==================== */
