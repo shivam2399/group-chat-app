@@ -31,7 +31,7 @@ export function initSocket() {
   // Fallback if socket.io client failed to load or is blocked by network
   if (typeof window.io !== "function") {
     console.warn(
-      "[Socket] window.io is unavailable. Real-time features disabled; falling back to REST."
+      "[Socket] window.io is unavailable. Real-time features disabled; falling back to REST.",
     );
     notifyConnectionState("disconnected", "Socket library unavailable");
     socketInstance = {
@@ -47,17 +47,6 @@ export function initSocket() {
 
   const socketHost = getBackendHost();
 
-  // Global `io` is provided by the official CDN script in chat.html
-  socketInstance = window.io(socketHost, {
-    auth: {
-      token: state.token,
-    },
-    reconnection: true,
-    reconnectionAttempts: Infinity,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
-    timeout: 10000,
-  });
   try {
     socketInstance = window.io(socketHost, {
       auth: {
