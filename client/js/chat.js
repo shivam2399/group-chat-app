@@ -21,8 +21,6 @@ import {
   clearPersonalUnreadCount,
   renderGroupMembers,
   renderAvailableUsers,
-  openChatView,
-  closeChatView,
 } from "./ui.js";
 import {
   validateFile,
@@ -61,7 +59,6 @@ async function loadGroups() {
 
     const groups = data.data || [];
     renderGroups(groups, state.currentGroupId, async (group, groupElement) => {
-      openChatView();
       if (state.currentGroupId === group.id) return;
 
       clearActiveChats();
@@ -99,10 +96,6 @@ async function loadGroups() {
 
       groups.forEach((g) => socket.emit("join_group", g.id));
       await loadMessages(firstGroup.id);
-
-      if (window.innerWidth > 768) {
-        openChatView();
-      }
     }
   } catch (error) {
     console.error("Failed to load groups:", error);
@@ -122,7 +115,6 @@ async function loadUsers() {
       data.data || [],
       state.currentPersonalUserId,
       async (otherUser, userElement) => {
-        openChatView();
         clearActiveChats();
         userElement.classList.add("active");
         clearPersonalUnreadCount(userElement);
@@ -626,11 +618,6 @@ dom.leaveGroupBtn?.addEventListener("click", async () => {
   } finally {
     dom.leaveGroupBtn.disabled = false;
   }
-});
-
-// Mobile back to conversation list
-dom.mobileBackBtn?.addEventListener("click", () => {
-  closeChatView();
 });
 
 // Logout
