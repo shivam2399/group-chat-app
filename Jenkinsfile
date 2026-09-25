@@ -48,8 +48,7 @@ pipeline {
                     if [ -d "/home/ubuntu/group-chat-app" ]; then
                         echo "Updating production app at /home/ubuntu/group-chat-app..."
                         cd /home/ubuntu/group-chat-app
-                        git fetch origin main
-                        git reset --hard origin/main
+                        git pull origin main || true
                         cd server && npm ci --omit=dev && cd ..
                     fi
 
