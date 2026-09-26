@@ -41,7 +41,21 @@ export const dom = {
   aiSmartReplies: document.getElementById("ai-smart-replies"),
   connectionBanner: document.getElementById("connection-banner"),
   logoutBtn: document.getElementById("logout-btn"),
+  chatLayout: document.querySelector(".chat-layout"),
+  mobileBackBtn: document.getElementById("mobile-back-btn"),
 };
+
+export function openChatView() {
+  document.body.classList.add("chat-open");
+  const layout = document.querySelector(".chat-layout");
+  if (layout) layout.classList.add("chat-open");
+}
+
+export function closeChatView() {
+  document.body.classList.remove("chat-open");
+  const layout = document.querySelector(".chat-layout");
+  if (layout) layout.classList.remove("chat-open");
+}
 
 export function renderProfile(user) {
   if (!user) return;
